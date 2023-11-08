@@ -8,21 +8,19 @@
 #include <fstream>
 #include<sstream>
 #include "csv.h"
-#include "CSVWriter.h"
 using namespace std;
-
 class ATM{
 	protected:
-	string cardNo;
-	int password;
+	long int Acc_num;
+	string pass;
 	double balance;
 	public:
 		ATM() {
 		}
-		ATM(string cardNo,int password,double balance) {
-				this->cardNo = cardNo;
-				this->password = password;
-				this->balance = balance;
+		ATM(long int Acc_num,string pass) {
+				this->Acc_num = Acc_num;
+				this->pass = pass;
+				balance = 5000;
 		}
 //		void set(long int Acc_num,string pass) {
 //			this->Acc_num=Acc_num;
@@ -105,7 +103,7 @@ class Withdraw : virtual public ATM{
 				 << "\n\t\t\t|DATE:\t\t\t    "<<date<<"\t      |"
 				 << "\n\t\t\t|TIME:\t\t\t    "<<time<<"\t      |"
 				 << "\n\t\t\t|LOCATION:\t\t    Warangal \t      |"
-				 << "\n\t\t\t|CARD NUM:\t\t    ************"<<cardNo<<"  |"
+				 << "\n\t\t\t|CARD NUM:\t\t    ************1215  |"
 				 << "\n\t\t\t|_____________________________________________|"<<endl<<endl;
 		}
 		void withdraw() {
@@ -122,19 +120,16 @@ class Withdraw : virtual public ATM{
 			}
 			else {
 				balance -= withdrawAmmount;
-				updataBalance();
 				recipt();
 			}
 		}
-		void updataBalance() {
-			// implementation remaining
-		}	
+	
 };
 class Main:public Deposite,public Withdraw,public Balance{
 	int choise;
 	public:
 	
-		Main(string A,int P,double B):ATM(A,P,B){
+		Main(long int A,string P):ATM(A,P){
 			}
 		void main_menu()
 		{
@@ -177,42 +172,46 @@ class Main:public Deposite,public Withdraw,public Balance{
 };
 
 
-bool isValideUser(string cardNo, int password,double &bal) {
-
-		io::CSVReader<3> in("data.csv");
-	  	in.read_header(io::ignore_extra_column, "CardNo", "Pin" ,"Balance");
-//	  	std::string vendor; int size; double speed;
-	  	string cardNumber;
-		int pass;
-	  	double balance;
-	  	
-	  	while(in.read_row(cardNumber, pass, balance)){
-//	    	cout<<cardNo << " " << pin << " " << balance << endl;
-			if(cardNumber == cardNo) {
-				if(password == pass) {
-					bal = balance;
-					return 1;
+bool isValideUser(long accNo, string password) {
+	fstream file;
+	file.open("data.csv",ios::in);
+    if(file.is_open()) {
+    	string line;
+    	string tmp;
+    	while(getline(file, line)){
+    			stringstream row(line);
+				getline(row,tmp,',');
+				getline(row,tmp,',');
+				
+				
+				if(tmp == to_string(accNo)) {
+					getline(row,tmp,',');
+					if(tmp == password) return 1;
+					else {
+						cout<<"Incorrect password"<<endl;
+						return 0;
+					}
 				}
-				else {
-					cout<<"Incorrect Password \n";
-				}
-			}
-	  	}
-	  	
-    	cout<<"User Not Found\n"<<endl;
+		}
+    	file.close();
+    	cout<<"Enter corret Card No or Password"<<endl;
     	return 0;
+	}
+    else {
+    	cout<<"Server unreachable" << endl;
+    	return 0;
+	}
 }
 void start() {
-		string cardNo;
-		int password;
-		double balance;
-		cin>>cardNo;
+		long int accNo;
+		string password;
+		cin>>accNo;
 		cout<<"\n\t\t\t\t\t\tEnter PIN\n\t\t\t\t\t\t   ";
 		cin>>password;
 		
-		if(isValideUser(cardNo,password,balance)){
+		if(isValideUser(accNo,password)){
 			ATM *obj;
-			Main o1(cardNo,password,balance);
+			Main o1(accNo,password);
 			obj=&o1;
 			
 			obj->main_menu();
